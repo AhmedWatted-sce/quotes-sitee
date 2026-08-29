@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -9,9 +10,9 @@
 <meta name="theme-color" content="#000000">
 <link rel="apple-touch-icon" href="images/icon.png">
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Amiri&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Amiri&family=Tajawal:wght@400;500;700;900&family=Almarai:wght@400;700&family=Reem+Kufi&family=Lalezar&family=Changa:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-<script src="https://cnjs.clouflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
 
@@ -98,6 +99,8 @@
   --main-gold-trans: rgba(214, 197, 174, 0.15);
   --bg-black: #000000;
   --text-white: #ffffff;
+  --app-color: var(--main-gold);
+  --app-color-transparent: var(--main-gold-trans);
 }
 
 body { 
@@ -836,27 +839,19 @@ input[type=range] {
     right: 0;
     width: 280px;
     height: 100vh;
-    background: #0a0a0a;
+    background: linear-gradient(
+      180deg,
+      rgba(20,20,20,0.9),
+      rgba(20,20,20,0.6)
+    );
+    backdrop-filter: blur(15px);
     border-left: 2px solid var(--main-gold-trans);
     padding: 30px 20px;
+    box-sizing: border-box;
+    align-items: flex-start;
+    justify-content: flex-start;
     z-index: 200;
   }
-
-  background: linear-gradient(
-    180deg,
-    rgba(20,20,20,0.9),
-    rgba(20,20,20,0.6)
-  );
-
-  backdrop-filter: blur(15px);
-  border-left: 1px solid rgba(214, 197, 174, 0.2);
-
-  padding: 20px;
-  box-sizing: border-box;
-  align-items: flex-start;
-  justify-content: flex-start;
-  z-index: 100;
-}
 
   .desktop-logo {
     display: block !important; /* إظهار اللوجو */
@@ -1262,21 +1257,25 @@ function showSplashScreen() {
 function renderFeed() {
   const feed = document.getElementById("feed");
   feed.innerHTML = "";
+  const likedImages = JSON.parse(localStorage.getItem("likedImages")) || {};
 
   images.forEach((src, index) => {
     const post = document.createElement("div");
     post.className = "post";
+    const isLiked = !!likedImages[index];
 
     post.innerHTML = `
       <div class="post-bg-blur" style="background-image: url('${src}')"></div>
       <img src="${src}" class="post-img">
+      <i class="fas fa-heart heart-animation"></i>
 
       <div class="feed-side-actions">
         <div class="feed-action-wrapper">
-          <button class="feed-action-btn" onclick="toggleFeedLike(this, ${index})">
-            <i class="fas fa-heart"></i>
+          <button class="feed-action-btn${isLiked ? ' liked' : ''}" onclick="toggleFeedLike(this, ${index})">
+            <i class="far fa-heart icon-outlined"></i>
+            <i class="fas fa-heart icon-filled"></i>
           </button>
-          <span class="feed-action-label" id="feed-count-${index}">1.2K</span>
+          <span class="feed-action-label" id="feed-count-${index}">${isLiked ? '1.3K' : '1.2K'}</span>
         </div>
 
         <div class="feed-action-wrapper">
@@ -1296,6 +1295,8 @@ function renderFeed() {
     `;
     feed.appendChild(post);
   });
+
+  setupDoubleTap();
 }
 
 function setupDoubleTap() {
@@ -1886,3 +1887,4 @@ function toggleCommentLike(index) {
 
 </body>
 </html>
+ 
