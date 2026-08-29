@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -16,80 +15,6 @@
 
 <style>
 
-/* مودال التعليقات يكون مثل تيك توك */
-#commentsContent {
-  background: #121212;
-  border-top: 2px solid var(--main-gold);
-}
-
-/* قائمة التعليقات */
-#commentsList {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 10px;
-}
-
-/* التعليق */
-.comment-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: rgba(255,255,255,0.06);
-  padding: 12px;
-  border-radius: 15px;
-  transition: 0.2s;
-}
-
-/* صورة المستخدم */
-.comment-avatar {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-}
-
-/* المحتوى */
-.comment-content {
-  flex: 1;
-}
-
-/* الاسم */
-.comment-name { color: var(--main-gold); }
-
-/* النص */
-.comment-text {
-  font-size: 14px;
-  margin-top: 3px;
-  line-height: 1.4;
-}
-
-/* زر اللايك */
-.comment-like {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  font-size: 13px;
-  color: #aaa;
-}
-
-.comment-like i {
-  font-size: 18px;
-}
-
-.comment-like.liked {
-  color: #D6C5AE;
-}
-
-/* input تحت */
-.comment-input-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-   
 /* ========================================
    متغيرات الألوان والتصميم
    ======================================== */
@@ -323,13 +248,22 @@ body {
   will-change: transform;
 }
 
+/* البطاقة اللي تحتوي الصورة + الأزرار مع بعض، عشان الأزرار تضل ملتصقة بالفيديو الحقيقي مهما كان عرض الشاشة */
+.post-card {
+  position: relative;
+  z-index: 1; /* فوق طبقة التمويه دايماً */
+  height: 100%;
+  width: 100%;
+}
+
 .post-img {
   width: 100%;
   height: 100%;
   object-fit: cover; /* يخليها مرتبة */
+  display: block;
 }
 
-/* الأزرار الجانبية الزجاجية */
+/* الأزرار الجانبية الزجاجية - داخل البطاقة نفسها الآن */
 .feed-side-actions {
   position: absolute;
   right: 15px; /* وضعها دائماً على اليمين */
@@ -410,18 +344,20 @@ body {
 
 .heart-animation { 
   position: absolute; 
+  top: 50%;
+  left: 50%;
   font-size: 120px; 
   color: var(--app-color); 
   z-index: 10; 
   opacity: 0; 
   pointer-events: none; 
-  transform: scale(0.5); 
+  transform: translate(-50%, -50%) scale(0.5); 
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
 }
 
 .heart-animation.show { 
   opacity: 1; 
-  transform: scale(1) translateY(-20px) rotate(-15deg); 
+  transform: translate(-50%, calc(-50% - 20px)) scale(1) rotate(-15deg); 
 }
 
 /* نافذة المشاركة السفلية */
@@ -486,6 +422,10 @@ body {
 #favTab, #createTab {
   padding-top: 110px; /* لضمان عدم اختفائها تحت القائمة العلوية العائمة */
   padding-bottom: 40px;
+  height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 
 .action-btn { 
@@ -799,12 +739,6 @@ input[type=range] {
     scroll-snap-type: y mandatory;
   }
 
-  /* نقل الأزرار لليسار وتوسيطها عشان القائمة الجانبية ما تغطي عليها */
-  .feed-side-actions {
-    right: 300px; /* القائمة 280 + مسافة 20 */
-    bottom: 50%;
-    transform: translateY(50%);
-  }
   .post {
     display: flex;
     justify-content: center;
@@ -813,16 +747,14 @@ input[type=range] {
     box-sizing: border-box;
   }
 
-  /* ترتيب حجم الصورة عشان تطلع كاملة وما تنقص على الشاشة العريضة */
-  .post-img {
+  /* البطاقة تاخذ حجم الفيديو الحقيقي (نسبة 9:16) والأزرار داخلها فتضل ملتصقة فيها دائماً */
+  .post-card {
     width: auto;
     height: 92vh;
-
+    aspect-ratio: 9 / 16;
     max-width: 420px;
-    object-fit: cover;
-
     border-radius: 25px;
-
+    overflow: hidden;
     box-shadow:
       0 0 40px rgba(0,0,0,0.5),
       0 0 80px rgba(214,197,174,0.08);
@@ -1266,30 +1198,25 @@ function renderFeed() {
 
     post.innerHTML = `
       <div class="post-bg-blur" style="background-image: url('${src}')"></div>
-      <img src="${src}" class="post-img">
-      <i class="fas fa-heart heart-animation"></i>
+      <div class="post-card">
+        <img src="${src}" class="post-img">
+        <i class="fas fa-heart heart-animation"></i>
 
-      <div class="feed-side-actions">
-        <div class="feed-action-wrapper">
-          <button class="feed-action-btn${isLiked ? ' liked' : ''}" onclick="toggleFeedLike(this, ${index})">
-            <i class="far fa-heart icon-outlined"></i>
-            <i class="fas fa-heart icon-filled"></i>
-          </button>
-          <span class="feed-action-label" id="feed-count-${index}">${isLiked ? '1.3K' : '1.2K'}</span>
-        </div>
+        <div class="feed-side-actions">
+          <div class="feed-action-wrapper">
+            <button class="feed-action-btn${isLiked ? ' liked' : ''}" onclick="toggleFeedLike(this, ${index})">
+              <i class="far fa-heart icon-outlined"></i>
+              <i class="fas fa-heart icon-filled"></i>
+            </button>
+            <span class="feed-action-label" id="feed-count-${index}">${isLiked ? '1.3K' : '1.2K'}</span>
+          </div>
 
-        <div class="feed-action-wrapper">
-          <button class="feed-action-btn" onclick="openComments(${index})">
-            <i class="fas fa-comment"></i>
-          </button>
-          <span class="feed-action-label">32</span>
-        </div>
-
-        <div class="feed-action-wrapper">
-          <button class="feed-action-btn" onclick="openShareMenu('${src}')">
-            <i class="fas fa-paper-plane"></i>
-          </button>
-          <span class="feed-action-label">نشر</span>
+          <div class="feed-action-wrapper">
+            <button class="feed-action-btn" onclick="openShareMenu('${src}')">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+            <span class="feed-action-label">نشر</span>
+          </div>
         </div>
       </div>
     `;
@@ -1790,101 +1717,7 @@ function publishCustomImage() {
 }
 
 window.addEventListener('DOMContentLoaded', addNewText);
-
-let currentPost = null;
-
-function openComments(index) {
-  currentPost = index;
-  showModal('commentsModal','commentsContent');
-  loadComments();
-}
-
-function loadComments() {
-  const list = document.getElementById("commentsList");
-  list.innerHTML = "";
-
-  let comments = JSON.parse(localStorage.getItem("comments_" + currentPost)) || [];
-
-  if (comments.length === 0) {
-    list.innerHTML = "<p style='color:#aaa'>لا يوجد تعليقات</p>";
-    return;
-  }
-
-  comments.forEach((c, i) => {
-    let div = document.createElement("div");
-    div.className = "comment-item";
-
-    div.innerHTML = `
-      <img class="comment-avatar" src="https://i.pravatar.cc/150?img=${i+5}">
-      
-      <div class="comment-content">
-        <div class="comment-name">مستخدم ${i+1}</div>
-        <div class="comment-text">${c.text}</div>
-      </div>
-
-      <div class="comment-like ${c.liked ? 'liked' : ''}" onclick="toggleCommentLike(${i})">
-        <i class="fas fa-heart"></i>
-        <span>${c.likes || 0}</span>
-      </div>
-    `;
-
-    list.appendChild(div);
-  });
-}
-
-function addComment() {
-  const input = document.getElementById("commentInput");
-  let text = input.value.trim();
-
-  if (!text) return;
-
-  let key = "comments_" + currentPost;
-  let comments = JSON.parse(localStorage.getItem(key)) || [];
-
-  comments.unshift({
-    text: text,
-    likes: 0,
-    liked: false
-  });
-
-  localStorage.setItem(key, JSON.stringify(comments));
-
-  input.value = "";
-  loadComments();
-}
-
-function toggleCommentLike(index) {
-  let key = "comments_" + currentPost;
-  let comments = JSON.parse(localStorage.getItem(key)) || [];
-
-  let comment = comments[index];
-
-  if (!comment.liked) {
-    comment.likes++;
-    comment.liked = true;
-  } else {
-    comment.likes--;
-    comment.liked = false;
-  }
-
-  localStorage.setItem(key, JSON.stringify(comments));
-  loadComments();
-}
 </script>
-
-<div class="modal-overlay" id="commentsModal" onclick="if(event.target===this) closeModal('commentsModal','commentsContent')">
-  <div class="modal-content" id="commentsContent">
-    <button class="close-modal" onclick="closeModal('commentsModal','commentsContent')">✖</button>
-    
-    <h3>التعليقات 💬</h3>
-     <div id="commentsList"></div>
-
-<div class="comment-input-row">
-  <input id="commentInput" class="custom-input" placeholder="اكتب تعليقك...">
-  <button class="submit-btn" onclick="addComment()">إرسال</button>
-</div>
-</div>
 
 </body>
 </html>
- 
